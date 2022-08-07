@@ -1,46 +1,99 @@
 #include <iostream>
 using namespace std;
 
+template<typename T>
 class Vector
 {
-	unsigned int size = 0; // количество действительно присутствующих элементов в контейнере
-	unsigned int capacity = 10; // ёмкость (вместительность, запас памяти)
-	int* data = nullptr; // указатель на динамический массив данных
+	unsigned int size; // РєРѕР»РёС‡РµСЃС‚РІРѕ РґРµР№СЃС‚РІРёС‚РµР»СЊРЅРѕ РїСЂРёСЃСѓС‚СЃС‚РІСѓСЋС‰РёС… СЌР»РµРјРµРЅС‚РѕРІ РІ РєРѕРЅС‚РµР№РЅРµСЂРµ
+	unsigned int capacity; // С‘РјРєРѕСЃС‚СЊ (РІРјРµСЃС‚РёС‚РµР»СЊРЅРѕСЃС‚СЊ, Р·Р°РїР°СЃ РїР°РјСЏС‚Рё)
+	T* data = nullptr; // СѓРєР°Р·Р°С‚РµР»СЊ РЅР° РґРёРЅР°РјРёС‡РµСЃРєРёР№ РјР°СЃСЃРёРІ РґР°РЅРЅС‹С…
 
 public:
-	Vector() : Vector(10)
-	{
-		// cout << "C-TOR WITHOUT PARAMS!\n";
-	}
+	Vector();
+	Vector(unsigned int capacity);
+	~Vector();
 
-	Vector(unsigned int capacity)
-	{
-		if (capacity < 10)
-		{
-			capacity = 10;
-		}
-		this->capacity = capacity;
-		data = new int[capacity];
-		// cout << "C-TOR WITH PARAMS!\n";
-	}
+	Vector(const Vector& other);
+	Vector(Vector&& other);
 
-	~Vector()
-	{
-		// cout << "DESTRUCTOR!\n";
-		if (data != nullptr)
-		{
-			delete[] data;
-			data = nullptr;
-		}
-	}
+	bool operator==(const Vector& other);
+	bool operator!=(const Vector& other);
+    const T operator[](int index);
+	Vector& operator=(const Vector& other);
 
 private:
-	void EnsureCapacity()
+	void EnsureCapacity();
+
+public:
+	void PushBack(const T& value);
+	void PushFront(const T& value);
+	void Clear();
+	bool IsEmpty() const;
+	void Print() const;
+	void pop_beck();
+	void pop_front();
+	void Insert(int index, const T& value);
+	void Erase(int index);
+	void remove_by_value(const T& value);
+	void trim_to_size();
+	int index_of(T& value);
+	int last_index_of(T& value);
+	void reverse();
+	void shuffle();
+	bool equals(const Vector* other);
+};
+	template<typename T>
+	Vector<T>::Vector() 
 	{
-		if (size == capacity) // если все элементы массива заняты
+		capacity = 10;
+		size = 0;
+		data = new T[capacity];
+	}
+
+	template<typename T>
+	Vector<T>::Vector(unsigned int capacity) 
+	{
+		if (capacity < 10) capacity = 10;
+		this->capacity = capacity;
+		size = 0;
+		data = new T[capacity];
+	}
+
+	template<typename T>
+	Vector<T>::~Vector() 
+	{
+		delete[] data;
+		data = nullptr;
+	}
+
+	template<typename T>
+	Vector<T>::Vector(const Vector& other)
+	{
+		capacity = other.capacity;
+		size = other.size;
+		delete[] data;
+		data = new T[capacity];
+
+		for (int i = 0; i < size; ++i)
+			data[i] = other.data[i];
+	}
+
+	template<typename T>
+	Vector<T>::Vector(Vector&& other)
+	{
+		capacity = other.capacity;
+		size = other.size;
+		data = other.data;
+		other.data = nullptr;
+	}
+
+	template<typename T>
+	void Vector<T>::EnsureCapacity()
+	{
+		if (size == capacity) // РµСЃР»Рё РІСЃРµ СЌР»РµРјРµРЅС‚С‹ РјР°СЃСЃРёРІР° Р·Р°РЅСЏС‚С‹
 		{
 			capacity *= 2;
-			int* temp = new int[capacity];
+			T* temp = new T[capacity];
 			for (unsigned int i = 0; i < size; i++)
 				temp[i] = data[i];
 			delete[] data;
@@ -48,14 +101,15 @@ private:
 		}
 	}
 
-public:
-	void PushBack(int value)
+	template<typename T>
+	void Vector<T>::PushBack(const T& value)
 	{
 		EnsureCapacity();
 		data[size++] = value;
 	}
 
-	void PushFront(int value)
+	template<typename T>
+	void Vector<T>::PushFront(const T& value)
 	{
 		EnsureCapacity();
 		for (unsigned int i = size; i > 0; i--)
@@ -64,17 +118,20 @@ public:
 		size++;
 	}
 
-	void Clear()
+	template<typename T>
+	void Vector<T>::Clear()
 	{
 		size = 0;
 	}
 
-	bool IsEmpty() const
+	template<typename T>
+	bool Vector<T>::IsEmpty() const
 	{
 		return size == 0;
 	}
 
-	void Print() const
+	template<typename T>
+	void Vector<T>::Print() const
 	{
 		if (IsEmpty())
 		{
@@ -86,15 +143,21 @@ public:
 			cout << data[i] << " ";
 		cout << "\n";
 	}
-	void pop_beck()
+
+	template<typename T>
+	void Vector<T>::pop_beck()
 	{
 		size--;
 	}
-    void pop_front()
+
+	template<typename T>
+	void Vector<T>::pop_front()
 	{
 		Erase(0);
 	}
-	void Insert(int index, int value)
+
+	template<typename T>
+	void Vector<T>::Insert(int index, const T& value)
 	{
 		if (index < 0 || index >= size) throw "wrong index)";
 		EnsureCapacity();
@@ -106,7 +169,9 @@ public:
 		}
 		size++;
 	}
-	void Erase(int index)
+
+	template<typename T>
+	void Vector<T>::Erase(int index)
 	{
 		if (index < 0 || index >= size) throw "wrong index)";
 		for (int i = 0; i < size; i++) {
@@ -115,15 +180,19 @@ public:
 		}
 		size--;
 	}
-	void remove_by_value(int value)
+
+	template<typename T>
+	void Vector<T>::remove_by_value(const T& value)
 	{
 		for (int i = 0; i < size; i++)
 			if (data[i] == value) Erase(i);
 	}
-	void trim_to_size()
+
+	template<typename T>
+	void Vector<T>::trim_to_size()
 	{
 		capacity = size;
-		int* temp = new int[capacity];
+		T* temp = new T[capacity];
 
 		for (int i = 0; i < size; i++)
 			temp[i] = data[i];
@@ -132,24 +201,32 @@ public:
 		data = temp;
 		temp = nullptr;
 	}
-	int index_of(int value)
+
+	template<typename T>
+	int Vector<T>::index_of(T& value)
 	{
 		for (int i = 0; i < size; i++)
 			if (data[i] == value) return i;
 		return -1;
 	}
-    int last_index_of(int value)
+
+	template<typename T>
+	int Vector<T>::last_index_of(T& value)
 	{
 		for (int i = size - 1; i >= 0; i--)
 			if (data[i] == value) return i;
 		return -1;
 	}
-    void reverse()
+
+	template<typename T>
+    void Vector<T>::reverse()
 	{
 		for (int i = 0; i < size / 2; i++)
 			swap(data[i], data[size - 1 - i]);
 	}
-	void shuffle()
+
+    template<typename T>
+	void Vector<T>::shuffle()
 	{
 		srand(time(0));
 		for (int i = 0; i < size; i++) {
@@ -158,42 +235,59 @@ public:
 			swap(data[a], data[b]);
 		}
 	}
-    bool equals(const Vector* other)
+
+	template<typename T>
+    bool Vector<T>::equals(const Vector* other)
 	{
 		return *this == *other;
 	}
-	bool operator==(const Vector& other)
+
+	template<typename T>
+	bool Vector<T>:: operator==(const Vector& other)
 	{
 		if (size != other.size) return false;
 		for (int i = 0; i < size; i++)
 			if (data[i] != other.data[i]) return false;
 		return true;
 	}
-    bool operator!=(const Vector& other)
+
+	template<typename T>
+	bool Vector<T>:: operator!=(const Vector& other)
 	{
 		if (*this == other) return false;
 		return true;
 	}
-    Vector operator[](int index)
+
+	template<typename T>
+	const T Vector<T>::operator[](int index)
 	{
 		if (index < 0 || index >= size) throw "wrong index)";
 		else return data[index];
 	}
-    Vector operator=(const Vector& other)
+
+	template<typename T>
+	Vector<T>& Vector<T>::operator=(const Vector& other)
 	{
 		if (this == &other) return *this;
 		capacity = other.capacity;
 		size = other.size;
 		delete[] data;
-		data = new int[capacity];
-        for (int i = 0; i < size; ++i)
+		data = new T[capacity];
+
+		for (int i = 0; i < size; ++i)
 			data[i] = other.data[i];
-        return *this;
+
+		return *this;
 	}
-};
+
 int main()
 {
-	Vector v;
-	for (int i = 0; i < 1000; i++) v.PushBack(rand() % 100);
+	Vector<int> v;
+	v.PushBack(37);
+	v.PushBack(27);
+	v.PushBack(177);
+	v.PushFront(7);
+	v.PushFront(17);
+	v.PushFront(77);
 	v.Print();
 }
